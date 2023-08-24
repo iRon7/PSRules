@@ -132,8 +132,7 @@ function Measure-AvoidPlusEqualsToBuildCollection {
                 Extent               = $Violation.Extent
                 RuleName             = 'AvoidPlusEqualsToBuildCollection'
                 Severity             = 'Warning'
-                RuleSuppressionID    = 'AvoidPlusEqualsToBuildCollection'
-                # SuggestedCorrections = 'link the  concerned Ivanti variable to the Ivanti module parameter and'
+                RuleSuppressionID    = $Violation.Left.VariablePath.UserPath
             }
         }
     }
