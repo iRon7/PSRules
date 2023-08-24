@@ -5,7 +5,7 @@ using namespace System.Management.Automation.Language
 function Measure-AvoidPlusEqualsToBuildCollection {
 <#
     .SYNOPSIS
-    Avoid using the Assignment by Addition Operator to build collections
+    Avoid using the Assignment by Addition Operator to build a collection
     .DESCRIPTION
     Array addition is inefficient because arrays have a fixed size. Each addition to the array
     creates a new array big enough to hold all elements of both the left and right operands.
