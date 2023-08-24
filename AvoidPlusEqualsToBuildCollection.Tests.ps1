@@ -93,6 +93,22 @@ Describe 'AvoidPlusEqualsToBuildCollections' {
         }
     }
 
+    Context 'Suppress' {
+        It 'RuleSuppressionID' {
+            {
+                [Diagnostics.CodeAnalysis.SuppressMessageAttribute('AvoidPlusEqualsToBuildCollection', 'knownProperties')]
+                Param()
+                $knownProperties = @( )
+                Get-ChildItem -Path . -Recurse -Filter pom.xml | ForEach-Object {
+                    [xml]$pom = Get-Content $_
+                    $knownProperties += $pom.project.properties.getEnumerator() |
+                        Where-Object name -ne '#comment' |
+                        ForEach-Object name
+                    }
+            } | Test-Rule | Should -BeFalse
+        }
+    }
+
     Context 'Negatives' {
         It 'Controlled' {
             {
