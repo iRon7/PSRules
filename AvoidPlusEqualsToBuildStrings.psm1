@@ -17,9 +17,9 @@ function Measure-AvoidPlusEqualsToBuildSting { # PSUseSingularNouns
     [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]
     .LINK
     https://github.com/iRon7/PSRules
-    https://github.com/PowerShell/PSScriptAnalyzer/issues/1934
+    https://github.com/PowerShell/PSScriptAnalyzer/issues/1935
     https://learn.microsoft.com/powershell/scripting/dev-cross-plat/performance/script-authoring-considerations
-    https://stackoverflow.com/a/60708579/1701026
+    https://stackoverflow.com/a/70093215/1701026
 #>
 
     [CmdletBinding()]
