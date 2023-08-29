@@ -19,8 +19,17 @@ Describe 'UseHyphenMinusForParameters' {
         It 'VariableExpressionAst' {
             { New-Variable -Name $MyName -Value $Value } | Test-Rule | Should -BeTrue
         }
+        It 'VariableExpressionAst' {
+            { Set-Variable -Name "Name$i" -Value $Value } | Test-Rule | Should -BeTrue
+        }
+        It 'VariableExpressionAst' {
+            { New-Variable ($Name) } | Test-Rule | Should -BeTrue
+        }
     }
     Context 'Negatives' {
+        It 'Scope' {
+            { Clear-Variable TestVariable* } | Test-Rule | Should -BeFalse
+        }
         It 'Scope' {
             { New-Variable -Name $MyName -Value $Value -Scope Local } | Test-Rule | Should -BeFalse
         }
