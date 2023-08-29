@@ -20,5 +20,11 @@ Describe 'UseHyphenMinusForParameters' {
             $Result.RuleName | Should -Be $RuleName
             $Result.SuggestedCorrections.Text | Should -Be '"Warning"'
         }
+        It 'Smart quoted expression' {
+            $Result = Invoke-ScriptAnalyzer -CustomRulePath $RulePath -ScriptDefinition { Write-Warning “$Warning” }.ToString()
+            $Result.Count | Should -Be  1
+            $Result.RuleName | Should -Be $RuleName
+            $Result.SuggestedCorrections.Text | Should -Be '"$Warning"'
+        }
     }
 }

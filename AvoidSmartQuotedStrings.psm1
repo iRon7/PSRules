@@ -27,8 +27,12 @@ function Measure-AvoidSmartQuotedString { # PSUseSingularNouns
     Process {
         [ScriptBlock]$Predicate = {
             Param ([System.Management.Automation.Language.Ast]$Ast)
-            $Ast -is [System.Management.Automation.Language.StringConstantExpressionAst] -and
-            'SingleQuoted', 'DoubleQuoted' -eq $Ast.StringConstantType -and
+            (
+                $Ast -is [System.Management.Automation.Language.ExpandableStringExpressionAst] -or (
+                    $Ast -is [System.Management.Automation.Language.StringConstantExpressionAst] -and
+                    $Ast.StringConstantType -in 'SingleQuoted', 'DoubleQuoted'
+                )
+            ) -and
             ([Int][Char]$Ast.Extent.Text[0] -gt 0xff -or [Int][Char]$Ast.Extent.Text[-1] -gt 0xff)
         }
         $Violations = $ScriptBlockAst.FindAll($Predicate, $False)
