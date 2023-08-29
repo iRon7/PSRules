@@ -2,10 +2,10 @@
 
 using namespace System.Management.Automation.Language
 
-function Measure-AvoidPlusEqualsToBuildCollection { # PSUseSingularNouns
+function Measure-AvoidPlusEqualsToBuildSting { # PSUseSingularNouns
 <#
     .SYNOPSIS
-    Avoid repeating the Assignment by Addition Operator to build a collection
+    Avoid using the Assignment by Addition Operator to build a collection
     .DESCRIPTION
     Array addition is inefficient because arrays have a fixed size. Each addition to the array
     creates a new array big enough to hold all elements of both the left and right operands.
@@ -31,8 +31,27 @@ function Measure-AvoidPlusEqualsToBuildCollection { # PSUseSingularNouns
         $ScriptBlockAst
     )
     Begin {
-        function IsArray([Ast]$Expression) {
-            return $Expression -is [ArrayExpressionAst] -or $Expression -is [ArrayLiteralAst]
+        function IsString([Ast]$Expression, [switch]$OrNull) {
+            if ($OrNull -and $Expression -is [VariableExpressionAst] -and $Expression.VariablePath.UserPath -eq 'Null') { return $true }
+            While (
+                $Expression -is [BinaryExpressionAst] -or
+                $Expression -is [ParenExpressionAst]
+            ) {
+                if (
+                    $Expression -is [BinaryExpressionAst] -and
+                    $Expression.Operator -eq 'Plus'
+                ) { $Expression = $Expression.Left }
+                else { # $Expression -is [ParenExpressionAst]
+                    $Expression = $Expression.Pipeline.PipelineElements[0].Expression
+                }
+            }
+            $Expression -is [ExpandableStringExpressionAst] -or (
+                $Expression -is [StringConstantExpressionAst] -and
+                $Expression.StringConstantType -in 'SingleQuoted', 'DoubleQuoted'
+            ) -or (
+                $Expression -is [ConvertExpressionAst] -and
+                $Expression.StaticType.Name -eq 'String'
+            )
         }
         function GetEquals ([String]$VariableName, [Ast]$Statement) {
             If ($Statement -is [NamedBlockAst] -or $Statement -is [StatementBlockAst]) {
@@ -62,12 +81,13 @@ function Measure-AvoidPlusEqualsToBuildCollection { # PSUseSingularNouns
             Param ([Ast]$Ast)
             if ($Ast -isnot [AssignmentStatementAst] -or $Ast.Operator -ne 'PlusEquals') { return $false }
             $VariableName = $Ast.Left.VariablePath.UserPath
+            $OrNull = IsString $Ast.Right.Expression
             $BlockAst = $Ast.Parent
             if ($BlockAst -is [StatementBlockAst]) {
                 if (GetEquals $VariableName $BlockAst) { return $false } # In scope assignment
                 $StatementAst = $BlockAst.Parent
-                if     ($StatementAst -is [ForStatementAst])     { return IsArray (GetEquals $VariableName $StatementAst) }
-                elseif ($StatementAst -is [ForEachStatementAst]) { return IsArray (GetEquals $VariableName $StatementAst) }
+                if     ($StatementAst -is [ForStatementAst])     { return IsString -OrNull:$OrNull (GetEquals $VariableName $StatementAst) }
+                elseif ($StatementAst -is [ForEachStatementAst]) { return IsString -OrNull:$OrNull (GetEquals $VariableName $StatementAst) }
                 return $false
             }
             elseif ($BlockAst -is [NamedBlockAst]) {
@@ -84,7 +104,7 @@ function Measure-AvoidPlusEqualsToBuildCollection { # PSUseSingularNouns
                     if ($CommandExpressionAst -isnot [CommandExpressionAst]) { return $false }
                     $PipelineAst = $CommandExpressionAst.Parent
                     if ($PipelineAst -isnot [PipelineAst]) { return $false }
-                    return IsArray (GetEquals $VariableName $PipelineAst)
+                    return IsString -OrNull:$OrNull (GetEquals $VariableName $PipelineAst)
                 }
                 elseif($ExpressionAst -is [CommandAst]) {
                     $CommandAst = $ScriptBlockExpressionAst.Parent
@@ -114,11 +134,11 @@ function Measure-AvoidPlusEqualsToBuildCollection { # PSUseSingularNouns
                         }
                         if ($Parameters['Process'].Extent.StartOffset -eq $ScriptBlockAst.Extent.StartOffset) {
                             if ($Parameters.ContainsKey('Begin')) {
-                                return IsArray (GetEquals $VariableName $Parameters['Begin'].ScriptBlock.EndBlock)
+                                return IsString -OrNull:$OrNull (GetEquals $VariableName $Parameters['Begin'].ScriptBlock.EndBlock)
                             }
                             $PipelineAst = $ExpressionAst.Parent
                             if ($PipelineAst -isnot [PipelineAst]) { return $false }
-                            return IsArray (GetEquals $VariableName $PipelineAst)
+                            return IsString -OrNull:$OrNull (GetEquals $VariableName $PipelineAst)
                         }
                     }
                 }
@@ -129,9 +149,9 @@ function Measure-AvoidPlusEqualsToBuildCollection { # PSUseSingularNouns
         $Violations = $ScriptBlockAst.FindAll($Predicate, $false)
         Foreach ($Violation in $Violations) {
             [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]@{
-                Message              = "Avoid using the assignment by addition operator for building a collection."
+                Message              = "Avoid using the assignment by addition operator for building a string."
                 Extent               = $Violation.Extent
-                RuleName             = 'PSAvoidPlusEqualsToBuildCollections'
+                RuleName             = 'PSAvoidPlusEqualsToBuildStrings'
                 Severity             = 'Warning'
                 RuleSuppressionID    = $Violation.Left.VariablePath.UserPath
             }

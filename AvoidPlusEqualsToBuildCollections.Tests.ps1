@@ -56,10 +56,29 @@ Describe 'AvoidPlusEqualsToBuildCollections' {
                 }
             } | Test-Rule | Should -BeTrue
         }
-    It 'Foreach-Object { ... } { ... }' {
+        It 'Foreach-Object { ... } { ... }' {
             {
                 1,2,3 | ForEach-Object -Begin { $Test = @() } -Process {
                     $Test += [PSCustomObject]@{ Index = $_ }
+                }
+            } | Test-Rule | Should -BeTrue
+        }
+    }
+
+    Context 'Non-empty initiator' {
+        It 'Expression Array' {
+            {
+                $Test = @(0)
+                foreach ($Index in 1,2,3) {
+                    $Test += [PSCustomObject]@{ Index = $Index }
+                }
+            } | Test-Rule | Should -BeTrue
+        }
+        It 'Literal Array' {
+            {
+                $Test = 1,2,3
+                foreach ($Index in 4,5,6) {
+                    $Test += [PSCustomObject]@{ Index = $Index }
                 }
             } | Test-Rule | Should -BeTrue
         }
