@@ -8,8 +8,8 @@ function Measure-UseHyphenMinusForParameter { # PSUseSingularNouns
     Hyphen-minus characters are sometimes unintendedly replaced when passed by
     word processors as Microsoft Office applications as MSWord and Outlook.
     It is recommended to prefix parameters with an unambiguous hyphen-minus as
-    Unicode dashes require a BOM (Byte Order Mark) and therefore it is advised
-    to avoid these characters.
+    Unicode dashes might cause parsing errors in earlier versions of PowerShell
+    and require a BOM (Byte Order Mark) in script files.
     .INPUTS
     [System.Management.Automation.Language.ScriptBlockAst]
     .OUTPUTS
