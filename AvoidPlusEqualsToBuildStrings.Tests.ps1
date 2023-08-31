@@ -65,6 +65,19 @@ Describe 'AvoidPlusEqualsToBuildCollections' {
         }
     }
 
+    Context 'Issues' {
+        It 'If block' {
+            {
+                if ($false) {
+                    $Test = ''
+                    foreach ($Index in 1,2,3) {
+                        $Test += $Index
+                    }
+                }
+            } | Test-Rule | Should -BeTrue
+        }
+    }
+
     Context 'Negatives' {
         It 'Controlled' {
             {

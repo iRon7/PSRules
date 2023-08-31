@@ -60,7 +60,7 @@ function Measure-AvoidPlusEqualsToBuildSting { # PSUseSingularNouns
             }
             else {
                 $Container = $Statement.Parent
-                if ($Container -isnot [NamedBlockAst]) { return }
+                if ($Container -isnot [NamedBlockAst] -and $Container -isnot [StatementBlockAst]) { return }
                 $Index = 0
                 While ($Index -lt $Container.Statements.get_Count()) {
                     if ($Container.Statements[$Index++].Extent.StartOffset -gt $Statement.Extent.StartOffset) { break }

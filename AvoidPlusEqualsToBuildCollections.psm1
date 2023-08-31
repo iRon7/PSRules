@@ -41,7 +41,7 @@ function Measure-AvoidPlusEqualsToBuildCollection { # PSUseSingularNouns
             }
             else {
                 $Container = $Statement.Parent
-                if ($Container -isnot [NamedBlockAst]) { return }
+                if ($Container -isnot [NamedBlockAst] -and $Container -isnot [StatementBlockAst]) { return }
                 $Index = 0
                 While ($Container.Statements[$Index].Extent.StartOffset -lt $Statement.Extent.StartOffset) { $Index++ }
             }

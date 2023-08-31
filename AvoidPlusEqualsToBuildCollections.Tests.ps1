@@ -84,7 +84,7 @@ Describe 'AvoidPlusEqualsToBuildCollections' {
         }
     }
 
-    Context 'Positive use cases' {
+    Context 'Issues' {
         It 'PSScriptAnalyzer' { # https://github.com/PowerShell/PSScriptAnalyzer/issues/1933
             {
                 $knownProperties = @( )
@@ -94,6 +94,16 @@ Describe 'AvoidPlusEqualsToBuildCollections' {
                         Where-Object name -ne '#comment' |
                         ForEach-Object name
                     }
+            } | Test-Rule | Should -BeTrue
+        }
+        It 'If block' {
+            {
+                if ($false) {
+                    $Test = @()
+                    foreach ($Index in 1,2,3) {
+                        $Test += [PSCustomObject]@{ Index = $Index }
+                    }
+                }
             } | Test-Rule | Should -BeTrue
         }
     }
