@@ -37,13 +37,13 @@ function Measure-AvoidPlusEqualsToBuildSting { # PSUseSingularNouns
                 $Expression -is [BinaryExpressionAst] -or
                 $Expression -is [ParenExpressionAst]
             ) {
-                if (
-                    $Expression -is [BinaryExpressionAst] -and
-                    $Expression.Operator -eq 'Plus'
-                ) { $Expression = $Expression.Left }
-                else { # $Expression -is [ParenExpressionAst]
+                if ($Expression -is [BinaryExpressionAst] -and $Expression.Operator -eq 'Plus') {
+                    $Expression = $Expression.Left
+                }
+                elseif ($Expression -is [ParenExpressionAst]) {
                     $Expression = $Expression.Pipeline.PipelineElements[0].Expression
                 }
+                else { break }
             }
             $Expression -is [ExpandableStringExpressionAst] -or (
                 $Expression -is [StringConstantExpressionAst] -and
@@ -56,13 +56,15 @@ function Measure-AvoidPlusEqualsToBuildSting { # PSUseSingularNouns
         function GetEquals ([String]$VariableName, [Ast]$Statement) {
             If ($Statement -is [NamedBlockAst] -or $Statement -is [StatementBlockAst]) {
                 $Container = $Statement
-                $Index = $Container.Statements.Count
+                $Index = $Container.Statements.get_Count()
             }
             else {
                 $Container = $Statement.Parent
                 if ($Container -isnot [NamedBlockAst]) { return }
                 $Index = 0
-                While ($Container.Statements[$Index].Extent.StartOffset -lt $Statement.Extent.StartOffset) { $Index++ }
+                While ($Index -lt $Container.Statements.get_Count()) {
+                    if ($Container.Statements[$Index++].Extent.StartOffset -gt $Statement.Extent.StartOffset) { break }
+                }
             }
             $EqualsStatement = $Null
             While (--$Index -ge 0) {
