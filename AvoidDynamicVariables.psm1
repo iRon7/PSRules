@@ -48,7 +48,10 @@ function Measure-AvoidDynamicVariable { # PSUseSingularNouns
                 }
                 $ParameterName = if ($Element -is [CommandParameterAst]) { $Element.ParameterName }
             }
-            if ($Parameters.get_Keys().where({ $_ -notin 'Name', 'Value', 0, 1 }, 'first' )) { return $false }
+            if (
+                !$Parameters.Count -or 
+                $Parameters.get_Keys().where({ $_ -notin 'Name', 'Value', 0, 1 }, 'first' )
+            ) { return $false }
             $Expression =
                 if ($Parameters.ContainsKey('Name')) { $Parameters['Name'] }
                 elseif ($Parameters.ContainsKey(0))  { $Parameters[0] }

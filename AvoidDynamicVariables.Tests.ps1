@@ -1,6 +1,6 @@
 #Requires -Modules @{ModuleName="Pester"; ModuleVersion="5.0.0"}
 
-Describe 'UseHyphenMinusForParameters' {
+Describe 'AvoidDynamicVariable' {
 
     BeforeAll {
         $RulePath = $PSCommandPath.Replace('.Tests.ps1', '.psm1')
@@ -27,7 +27,10 @@ Describe 'UseHyphenMinusForParameters' {
         }
     }
     Context 'Negatives' {
-        It 'Scope' {
+        It 'Parameterless' {
+            { Get-Variable } | Test-Rule | Should -BeFalse
+        }
+        It 'Wildcard' {
             { Clear-Variable TestVariable* } | Test-Rule | Should -BeFalse
         }
         It 'Scope' {
