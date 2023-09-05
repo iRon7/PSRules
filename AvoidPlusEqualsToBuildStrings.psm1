@@ -7,10 +7,10 @@ function Measure-AvoidPlusEqualsToBuildSting { # PSUseSingularNouns
     .SYNOPSIS
     Avoid using the Assignment by Addition Operator to build a collection
     .DESCRIPTION
-    Array addition is inefficient because arrays have a fixed size. Each addition to the array
-    creates a new array big enough to hold all elements of both the left and right operands.
-    The elements of both operands are copied into the new array. For small collections, this
-    overhead may not matter. Performance can suffer for large collections.
+    Strings are immutable. Each addition to the string actually creates a new string big enough to hold the
+    contents of both the left and right operands, then copies the elements of both operands into the new string.
+    For small strings, this overhead may not matter. For large strings, this can affect performance and memory
+    consumption.
     .INPUTS
     [System.Management.Automation.Language.ScriptBlockAst]
     .OUTPUTS
