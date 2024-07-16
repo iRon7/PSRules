@@ -16,8 +16,8 @@ function Measure-PossibleArgumentWithOperatorConfusion {
     .OUTPUTS
     [Microsoft.Windows.PowerShell.ScriptAnalyzer.Generic.DiagnosticRecord]
     .LINK
-    https://github.com/PowerShell/PSScriptAnalyzer/issues/1706
-    https://stackoverflow.com/a/68830451/1701026
+    https://github.com/PowerShell/PSScriptAnalyzer/issues/2014
+    https://github.com/PowerShell/PowerShell/issues/24054
 #>
 
     [CmdletBinding()]
