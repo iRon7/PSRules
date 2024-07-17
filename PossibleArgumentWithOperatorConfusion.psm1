@@ -30,7 +30,7 @@ function Measure-PossibleArgumentWithOperatorConfusion {
     )
     Begin {
         $Operators = @(
-            # Equality
+            # Equality, see: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_comparison_operators
             'eq', 'ieq', 'ceq' # equals
             'ne', 'ine', 'cne' # not equals
             'gt', 'igt', 'cgt' # greater than
@@ -56,6 +56,9 @@ function Measure-PossibleArgumentWithOperatorConfusion {
             # Type
             'is' # both objects are the same type
             'isnot' # the objects aren't the same type
+
+            # Format operator -f, see: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_operators#format-operator--f
+            'f' # Formats strings by using the format method of string objects
         )
     }
     Process {

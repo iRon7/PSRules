@@ -32,6 +32,12 @@ Describe 'PossibleArgumentWithOperatorConfusion' {
             $Result.RuleName | Should -Be $RuleName
             $Result.SuggestedCorrections.Text | Should -Be '(&{ (1,2,3).Where{$_ -eq 4} }) -isnot [int]'
         }
+        It 'ScriptBlock -isnot' {
+            $Result = Invoke-ScriptAnalyzer -CustomRulePath $RulePath -ScriptDefinition { &{ "{0} {1,-10} {2:N}" } -f 1,"hello",[math]::pi }.ToString()
+            $Result.Count | Should -Be  1
+            $Result.RuleName | Should -Be $RuleName
+            $Result.SuggestedCorrections.Text | Should -Be '(&{ "{0} {1,-10} {2:N}" }) -f 1,"hello",[math]::pi'
+        }
     }
 
     Context 'Negatives' {
