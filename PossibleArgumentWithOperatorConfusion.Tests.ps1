@@ -8,19 +8,25 @@ Describe 'PossibleArgumentWithOperatorConfusion' {
     }
 
     Context 'Positives' {
-        It 'eq' {
+        It 'ScriptBlock -eq' {
             $Result = Invoke-ScriptAnalyzer -CustomRulePath $RulePath -ScriptDefinition { &{ $Test } -eq 5 }.ToString()
             $Result.Count | Should -Be  1
             $Result.RuleName | Should -Be $RuleName
             $Result.SuggestedCorrections.Text | Should -Be '(&{ $Test }) -eq 5'
         }
-        It 'like' {
+        It 'Variable -ne' {
+            $Result = Invoke-ScriptAnalyzer -CustomRulePath $RulePath -ScriptDefinition { & $Test -ne "a" }.ToString()
+            $Result.Count | Should -Be  1
+            $Result.RuleName | Should -Be $RuleName
+            $Result.SuggestedCorrections.Text | Should -Be '(& $Test) -ne "a"'
+        }
+        It 'ScriptBlock -like' {
             $Result = Invoke-ScriptAnalyzer -CustomRulePath $RulePath -ScriptDefinition { &{ "Test" } -like "T?st" }.ToString()
             $Result.Count | Should -Be  1
             $Result.RuleName | Should -Be $RuleName
             $Result.SuggestedCorrections.Text | Should -Be '(&{ "Test" }) -like "T?st"'
         }
-        It 'isnot' {
+        It 'ScriptBlock -isnot' {
             $Result = Invoke-ScriptAnalyzer -CustomRulePath $RulePath -ScriptDefinition { if (&{ (1,2,3).Where{$_ -eq 4} } -isnot [int]) { Throw "The expression should return an integer" } }.ToString()
             $Result.Count | Should -Be  1
             $Result.RuleName | Should -Be $RuleName
@@ -29,16 +35,20 @@ Describe 'PossibleArgumentWithOperatorConfusion' {
     }
 
     Context 'Negatives' {
-        It 'Custom argument' {
+        It 'ScriptBlock -CustomArgument' {
             $Result = Invoke-ScriptAnalyzer -CustomRulePath $RulePath -ScriptDefinition { &{ $Test } -CustomArgument 5 }.ToString()
             $Result | Should -BeNullOrEmpty
         }
-        It 'Switch' {
+        It 'ScriptBlock -Switch' {
             $Result = Invoke-ScriptAnalyzer -CustomRulePath $RulePath -ScriptDefinition { &{ $Test } -Contains }.ToString()
             $Result | Should -BeNullOrEmpty
         }
-        It 'Corrected' {
+        It 'Corrected ScriptBlock -ne' {
             $Result = Invoke-ScriptAnalyzer -CustomRulePath $RulePath -ScriptDefinition { (&{ 1, 2, 3 }) -ne 2 }.ToString()
+            $Result | Should -BeNullOrEmpty
+        }
+        It 'Corrected variable -cne' {
+            $Result = Invoke-ScriptAnalyzer -CustomRulePath $RulePath -ScriptDefinition { (& $Variable) -cne 2 }.ToString()
             $Result | Should -BeNullOrEmpty
         }
     }

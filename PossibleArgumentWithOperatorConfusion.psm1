@@ -64,7 +64,8 @@ function Measure-PossibleArgumentWithOperatorConfusion {
             if ($Ast -isnot [CommandAst]) { return $false } 
             if ($Ast.InvocationOperator -ne 'Ampersand') { return $false }
             if ($Ast.CommandElements.Count -ne 3) { return $false }
-            if ($Ast.CommandElements[0] -isnot [ScriptBlockExpressionAst]) { return $false }
+            if ($Ast.CommandElements[0] -isnot [ScriptBlockExpressionAst] -and
+                $Ast.CommandElements[0] -isnot [VariableExpressionAst]) { return $false }
             if ($Ast.CommandElements[1] -isnot [CommandParameterAst]) { return $false }
             return $Ast.CommandElements[1].ParameterName -in $Operators
         }
