@@ -38,6 +38,18 @@ Describe 'PossibleArgumentWithOperatorConfusion' {
             $Result.RuleName | Should -Be $RuleName
             $Result.SuggestedCorrections.Text | Should -Be '(&{ "{0} {1,-10} {2:N}" }) -f 1,"hello",[math]::pi'
         }
+        It 'Multiple operators' {
+            $Result = Invoke-ScriptAnalyzer -CustomRulePath $RulePath -ScriptDefinition { & $ScriptBlock -eq 1 -and $a -eq 2 }.ToString()
+            $Result.Count | Should -Be  1
+            $Result.RuleName | Should -Be $RuleName
+            $Result.SuggestedCorrections.Text | Should -Be '(& $ScriptBlock) -eq 1 -and $a -eq 2'
+        }
+        It 'Multiple arithmetic operators' {
+            $Result = Invoke-ScriptAnalyzer -CustomRulePath $RulePath -ScriptDefinition { & $a -bor 2 -and 3 }.ToString()
+            $Result.Count | Should -Be  1
+            $Result.RuleName | Should -Be $RuleName
+            $Result.SuggestedCorrections.Text | Should -Be '(& $a) -bor 2 -and 3'
+        }
     }
 
     Context 'Negatives' {
@@ -55,6 +67,10 @@ Describe 'PossibleArgumentWithOperatorConfusion' {
         }
         It 'Corrected variable -cne' {
             $Result = Invoke-ScriptAnalyzer -CustomRulePath $RulePath -ScriptDefinition { (& $Variable) -cne 2 }.ToString()
+            $Result | Should -BeNullOrEmpty
+        }
+        It 'Corrected variable -cne' {
+            $Result = Invoke-ScriptAnalyzer -CustomRulePath $RulePath -ScriptDefinition { & $ScriptBlock -eq 1 -and $This -ButNot $This }.ToString()
             $Result | Should -BeNullOrEmpty
         }
     }

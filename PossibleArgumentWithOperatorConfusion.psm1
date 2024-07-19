@@ -29,7 +29,16 @@ function Measure-PossibleArgumentWithOperatorConfusion {
         $ScriptBlockAst
     )
     Begin {
-        $Operators = @(
+        $Operators = @( # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_operators
+
+            # Logical Operators
+            'and', 'or', 'xor' # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_logical_operators
+            # -not doesn't have a left hand operand
+
+            # Arithmetic Operators
+            'band', 'bor', 'bxor', 'shl', 'shr' # https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_arithmetic_operators
+            # -bnot doesn't have a left hand operand
+
             # Equality, see: https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_comparison_operators
             'eq', 'ieq', 'ceq' # equals
             'ne', 'ine', 'cne' # not equals
@@ -66,11 +75,14 @@ function Measure-PossibleArgumentWithOperatorConfusion {
             Param ([Ast]$Ast)
             if ($Ast -isnot [CommandAst]) { return $false } 
             if ($Ast.InvocationOperator -ne 'Ampersand') { return $false }
-            if ($Ast.CommandElements.Count -ne 3) { return $false }
+            if ($Ast.CommandElements.Count -lt 3) { return $false }
             if ($Ast.CommandElements[0] -isnot [ScriptBlockExpressionAst] -and
                 $Ast.CommandElements[0] -isnot [VariableExpressionAst]) { return $false }
-            if ($Ast.CommandElements[1] -isnot [CommandParameterAst]) { return $false }
-            return $Ast.CommandElements[1].ParameterName -in $Operators
+            $Start = $Ast.CommandElements[0].Extent.StartOffset - $Ast.Extent.StartOffset
+            $Expression = $Ast.Extent.Text.SubString($Start)
+            $Errors = $Null
+            $Null = [Parser]::ParseInput($Expression, [ref]$Null, [ref]$Errors)
+            return $Errors.Count -eq 0
         }
         $Violations = $ScriptBlockAst.FindAll($Predicate, $False)
         Foreach ($Violation in $Violations) {
